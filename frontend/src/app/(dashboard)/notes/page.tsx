@@ -20,7 +20,6 @@ export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [insights, setInsights] = useState<UserInsights | null>(null);
   const [search, setSearch] = useState("");
-  const [activeTag, setActiveTag] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,11 +54,6 @@ export default function NotesPage() {
     void loadNotes();
   }, [session]);
 
-  const allTags = useMemo(
-    () => Array.from(new Set(notes.flatMap((note) => note.tags))).sort(),
-    [notes],
-  );
-
   const filteredNotes = useMemo(() => {
     return notes.filter((note) => {
       const query = search.toLowerCase();
@@ -68,11 +62,10 @@ export default function NotesPage() {
         note.title.toLowerCase().includes(query) ||
         note.content.toLowerCase().includes(query) ||
         note.tags.some((tag) => tag.toLowerCase().includes(query));
-      const matchesTag = !activeTag || note.tags.includes(activeTag);
 
-      return matchesSearch && matchesTag;
+      return matchesSearch;
     });
-  }, [activeTag, notes, search]);
+  }, [notes, search]);
 
   if (isCheckingSession || isLoading) {
     return (
@@ -131,42 +124,14 @@ export default function NotesPage() {
       </header>
 
       <section className="rounded-4xl border border-white/10 bg-white/5 p-4 shadow-2xl shadow-blue-950/25 backdrop-blur">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/8 px-4 py-3">
-            <Search size={18} className="text-blue-300" />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by title, content, or tag..."
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-blue-100/40"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveTag("")}
-              className={`rounded-full px-4 py-2 text-xs font-bold ${
-                !activeTag ? "bg-blue-500 text-white" : "bg-white/8 text-blue-100/70"
-              }`}
-            >
-              All
-            </button>
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setActiveTag(tag)}
-                className={`rounded-full px-4 py-2 text-xs font-bold ${
-                  activeTag === tag
-                    ? "bg-blue-500 text-white"
-                    : "bg-white/8 text-blue-100/70"
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 px-4 py-3">
+          <Search size={18} className="text-blue-300" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by title, content, or tag..."
+            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-blue-100/40"
+          />
         </div>
       </section>
 
