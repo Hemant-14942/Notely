@@ -8,6 +8,10 @@ GitHub: [https://github.com/Hemant-14942/Notely](https://github.com/Hemant-14942
 
 The repository contains both the frontend and backend source code, setup instructions, environment examples, screenshots, and sample AI output for review.
 
+## Demo Video
+
+[Demo video (Google Drive)](https://drive.google.com/file/d/1WehI71_mQqw3158w_2udMao9VbNAjCcc/view?usp=sharing)
+
 ## Features
 
 - Authentication with signup, login, protected dashboard pages, JWT sessions, and hashed passwords.
