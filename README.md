@@ -2,6 +2,12 @@
 
 Notely is a full-stack AI notes workspace built for the Peblo Full Stack Developer Challenge. It lets users create and manage notes, organize them with tags, generate AI summaries and action items, search/filter their workspace, share public notes, and view productivity insights.
 
+## Repository
+
+GitHub: [https://github.com/Hemant-14942/Notely](https://github.com/Hemant-14942/Notely)
+
+The repository contains both the frontend and backend source code, setup instructions, environment examples, screenshots, and sample AI output for review.
+
 ## Features
 
 - Authentication with signup, login, protected dashboard pages, JWT sessions, and hashed passwords.
