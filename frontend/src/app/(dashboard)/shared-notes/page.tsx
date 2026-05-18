@@ -3,14 +3,14 @@
 import { Copy, ExternalLink, Loader2, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { notify } from "@/lib/toast";
 import type { Note } from "@/lib/types";
 import { useAuthSession } from "@/lib/use-auth-session";
 
 export default function SharedNotesPage() {
   const { session, isCheckingSession } = useAuthSession();
   const [notes, setNotes] = useState<Note[]>([]);
-  const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -21,7 +21,6 @@ export default function SharedNotesPage() {
 
     const loadSharedNotes = async () => {
       setIsLoading(true);
-      setError("");
 
       try {
         const sharedNotes = await apiRequest<Note[]>("/notes/shared", {
@@ -29,11 +28,7 @@ export default function SharedNotesPage() {
         });
         setNotes(sharedNotes);
       } catch (sharedError) {
-        setError(
-          sharedError instanceof ApiError
-            ? sharedError.message
-            : "Unable to load shared notes.",
-        );
+        notify.apiError(sharedError, "Unable to load shared notes.");
       } finally {
         setIsLoading(false);
       }
@@ -50,6 +45,7 @@ export default function SharedNotesPage() {
     const url = `${window.location.origin}/shared/${note.shareId}`;
     await navigator.clipboard?.writeText(url);
     setCopiedId(note._id);
+    notify.success("Public link copied to clipboard.");
   };
 
   if (isCheckingSession || isLoading) {
@@ -73,12 +69,6 @@ export default function SharedNotesPage() {
           Manage notes you have shared and copy public links for classmates.
         </p>
       </header>
-
-      {error ? (
-        <p className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-          {error}
-        </p>
-      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         {notes.map((note) => (

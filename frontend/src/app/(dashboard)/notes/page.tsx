@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { notify } from "@/lib/toast";
 import type { Note, UserInsights } from "@/lib/types";
 import { useAuthSession } from "@/lib/use-auth-session";
 
@@ -20,7 +21,6 @@ export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [insights, setInsights] = useState<UserInsights | null>(null);
   const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +30,6 @@ export default function NotesPage() {
 
     const loadNotes = async () => {
       setIsLoading(true);
-      setError("");
 
       try {
         const [notesData, insightData] = await Promise.all([
@@ -41,11 +40,7 @@ export default function NotesPage() {
         setNotes(notesData);
         setInsights(insightData);
       } catch (notesError) {
-        setError(
-          notesError instanceof ApiError
-            ? notesError.message
-            : "Unable to load notes.",
-        );
+        notify.apiError(notesError, "Unable to load your notes library.");
       } finally {
         setIsLoading(false);
       }
@@ -134,12 +129,6 @@ export default function NotesPage() {
           />
         </div>
       </section>
-
-      {error ? (
-        <p className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-          {error}
-        </p>
-      ) : null}
 
       {filteredNotes.length ? (
         <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">

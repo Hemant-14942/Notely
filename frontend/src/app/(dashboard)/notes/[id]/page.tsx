@@ -14,7 +14,8 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { notify } from "@/lib/toast";
 import type { Note, NoteInsights } from "@/lib/types";
 import { useAuthSession } from "@/lib/use-auth-session";
 
@@ -33,7 +34,7 @@ export default function NoteDetailPage() {
   const [form, setForm] = useState(emptyForm);
   const [aiInsights, setAiInsights] = useState<NoteInsights | null>(null);
   const [shareUrl, setShareUrl] = useState("");
-  const [error, setError] = useState("");
+  const [loadFailed, setLoadFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -46,7 +47,7 @@ export default function NoteDetailPage() {
 
     const loadNote = async () => {
       setIsLoading(true);
-      setError("");
+      setLoadFailed(false);
 
       try {
         const noteData = await apiRequest<Note>(`/notes/${params.id}`, {
@@ -64,9 +65,8 @@ export default function NoteDetailPage() {
           noteData.shareId ? `${window.location.origin}/shared/${noteData.shareId}` : "",
         );
       } catch (noteError) {
-        setError(
-          noteError instanceof ApiError ? noteError.message : "Unable to load note.",
-        );
+        setLoadFailed(true);
+        notify.apiError(noteError, "Unable to load this note.");
       } finally {
         setIsLoading(false);
       }
@@ -103,7 +103,6 @@ export default function NoteDetailPage() {
     }
 
     setIsSaving(true);
-    setError("");
 
     try {
       const savedNote = await apiRequest<Note>(`/notes/${note._id}`, {
@@ -122,9 +121,7 @@ export default function NoteDetailPage() {
       setLastSavedAt(new Date());
       return savedNote;
     } catch (saveError) {
-      setError(
-        saveError instanceof ApiError ? saveError.message : "Unable to save note.",
-      );
+      notify.apiError(saveError, "Unable to save note. Please try again.");
       return null;
     } finally {
       setIsSaving(false);
@@ -146,7 +143,10 @@ export default function NoteDetailPage() {
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveNote();
+    const savedNote = await saveNote();
+    if (savedNote) {
+      notify.success("Note saved successfully.");
+    }
   };
 
   const handleGenerateSummary = async () => {
@@ -161,7 +161,6 @@ export default function NoteDetailPage() {
     }
 
     setIsGenerating(true);
-    setError("");
 
     try {
       const generatedInsights = await apiRequest<NoteInsights>(
@@ -172,12 +171,9 @@ export default function NoteDetailPage() {
         },
       );
       setAiInsights(generatedInsights);
+      notify.success("AI summary generated successfully.");
     } catch (summaryError) {
-      setError(
-        summaryError instanceof ApiError
-          ? summaryError.message
-          : "Unable to generate AI summary.",
-      );
+      notify.apiError(summaryError, "Unable to generate AI summary. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -199,10 +195,9 @@ export default function NoteDetailPage() {
       const publicUrl = `${window.location.origin}/shared/${response.shareId}`;
       setShareUrl(publicUrl);
       await navigator.clipboard?.writeText(publicUrl);
+      notify.success("Note shared! Public link copied to clipboard.");
     } catch (shareError) {
-      setError(
-        shareError instanceof ApiError ? shareError.message : "Unable to share note.",
-      );
+      notify.apiError(shareError, "Unable to share note. Please try again.");
     }
   };
 
@@ -216,13 +211,10 @@ export default function NoteDetailPage() {
         method: "DELETE",
         token: session.token,
       });
+      notify.success("Note archived successfully.");
       router.push("/notes");
     } catch (archiveError) {
-      setError(
-        archiveError instanceof ApiError
-          ? archiveError.message
-          : "Unable to archive note.",
-      );
+      notify.apiError(archiveError, "Unable to archive note. Please try again.");
     }
   };
 
@@ -236,10 +228,18 @@ export default function NoteDetailPage() {
 
   return (
     <section className="space-y-5">
-      {error || !note ? (
+      {loadFailed || !note ? (
         <div className="rounded-4xl border border-white/10 bg-white/5 p-10 text-center">
           <h1 className="text-3xl font-black">Note not found</h1>
-          <p className="mt-3 text-blue-100/60">{error}</p>
+          <p className="mt-3 text-blue-100/60">
+            This note may have been removed or you do not have access to it.
+          </p>
+          <Link
+            href="/notes"
+            className="mt-6 inline-flex rounded-2xl bg-blue-500 px-5 py-3 text-sm font-bold text-white"
+          >
+            Back to library
+          </Link>
         </div>
       ) : (
         <>

@@ -1,6 +1,7 @@
 "use client";
 
 import { LogOut, Mail, ShieldCheck, User } from "lucide-react";
+import { notify } from "@/lib/toast";
 import { useAuthSession } from "@/lib/use-auth-session";
 
 export default function ProfilePage() {
@@ -42,7 +43,10 @@ export default function ProfilePage() {
           <p className="mt-2 text-blue-100/60">{session.user.email}</p>
           <button
             type="button"
-            onClick={logout}
+            onClick={() => {
+              logout();
+              notify.info("You have been logged out successfully.");
+            }}
             className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-400"
           >
             <LogOut size={17} />

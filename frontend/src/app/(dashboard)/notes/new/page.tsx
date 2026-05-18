@@ -4,7 +4,8 @@ import { ArrowLeft, ArrowRight, Loader2, Plus, Tags } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { notify } from "@/lib/toast";
 import type { Note } from "@/lib/types";
 import { useAuthSession } from "@/lib/use-auth-session";
 
@@ -19,7 +20,6 @@ export default function NewNotePage() {
   const router = useRouter();
   const { session, isCheckingSession } = useAuthSession();
   const [form, setForm] = useState(emptyForm);
-  const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const parseTags = () =>
@@ -36,7 +36,6 @@ export default function NewNotePage() {
     }
 
     setIsSaving(true);
-    setError("");
 
     try {
       const savedNote = await apiRequest<Note>("/notes", {
@@ -50,13 +49,10 @@ export default function NewNotePage() {
         },
       });
 
+      notify.success("Note created successfully.");
       router.push(`/notes/${savedNote._id}`);
     } catch (createError) {
-      setError(
-        createError instanceof ApiError
-          ? createError.message
-          : "Unable to create note.",
-      );
+      notify.apiError(createError, "Unable to create note. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -92,12 +88,6 @@ export default function NewNotePage() {
           you can edit, generate AI summary, and share.
         </p>
       </header>
-
-      {error ? (
-        <p className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-          {error}
-        </p>
-      ) : null}
 
       <form
         onSubmit={handleCreate}

@@ -12,7 +12,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { notify } from "@/lib/toast";
 import type { Note, UserInsights } from "@/lib/types";
 import { useAuthSession } from "@/lib/use-auth-session";
 
@@ -20,7 +21,6 @@ export default function InsightsPage() {
   const { session, isCheckingSession } = useAuthSession();
   const [insights, setInsights] = useState<UserInsights | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +30,6 @@ export default function InsightsPage() {
 
     const loadInsights = async () => {
       setIsLoading(true);
-      setError("");
 
       try {
         const [insightData, noteData] = await Promise.all([
@@ -40,11 +39,7 @@ export default function InsightsPage() {
         setInsights(insightData);
         setNotes(noteData);
       } catch (insightError) {
-        setError(
-          insightError instanceof ApiError
-            ? insightError.message
-            : "Unable to load insights.",
-        );
+        notify.apiError(insightError, "Unable to load your insights dashboard.");
       } finally {
         setIsLoading(false);
       }
@@ -144,12 +139,6 @@ export default function InsightsPage() {
           </div>
         </div>
       </header>
-
-      {error ? (
-        <p className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-          {error}
-        </p>
-      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => {

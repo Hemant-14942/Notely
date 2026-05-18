@@ -4,8 +4,9 @@ import { ArrowRight, BrainCircuit, Loader2, Sparkles, UserPlus } from "lucide-re
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
 import { saveSession, type AuthSession } from "@/lib/auth";
+import { notify } from "@/lib/toast";
 
 type AuthResponse = AuthSession;
 
@@ -14,12 +15,10 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError("");
     setIsSubmitting(true);
 
     try {
@@ -29,12 +28,12 @@ export default function SignupPage() {
       });
 
       saveSession(session);
+      notify.success("Account created! Setting up your workspace...");
       router.push("/notes");
     } catch (signupError) {
-      setError(
-        signupError instanceof ApiError
-          ? signupError.message
-          : "Unable to create your account right now.",
+      notify.apiError(
+        signupError,
+        "Unable to create your account right now. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -95,12 +94,6 @@ export default function SignupPage() {
                 required
               />
             </label>
-
-            {error ? (
-              <p className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-                {error}
-              </p>
-            ) : null}
 
             <button
               type="submit"

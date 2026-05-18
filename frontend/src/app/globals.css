@@ -42,3 +42,40 @@ body {
 .testimonial-float {
   animation: testimonial-float 6s ease-in-out infinite;
 }
+
+.notely-toast-container {
+  width: min(420px, calc(100vw - 2rem));
+  top: 1.25rem !important;
+  right: 1.25rem !important;
+  z-index: 9999;
+}
+
+.notely-toast {
+  border-radius: 1rem !important;
+  border: 1px solid rgb(255 255 255 / 12%) !important;
+  box-shadow: 0 20px 50px rgb(2 6 23 / 45%) !important;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  padding: 0.9rem 1rem !important;
+  backdrop-filter: blur(12px);
+}
+
+.notely-toast.Toastify__toast--success {
+  background: linear-gradient(135deg, rgb(30 64 175), rgb(37 99 235)) !important;
+  color: #eff6ff !important;
+}
+
+.notely-toast.Toastify__toast--error {
+  background: linear-gradient(135deg, rgb(127 29 29), rgb(185 28 28)) !important;
+  color: #fef2f2 !important;
+}
+
+.notely-toast.Toastify__toast--info {
+  background: linear-gradient(135deg, rgb(15 23 42), rgb(30 58 138)) !important;
+  color: #dbeafe !important;
+}
+
+.notely-toast-progress {
+  background: rgb(255 255 255 / 55%) !important;
+}
